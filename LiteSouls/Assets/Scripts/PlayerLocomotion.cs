@@ -34,6 +34,15 @@ namespace MR {
 
         }
 
+        public void Update() {
+            float delta = Time.deltaTime;
+
+            inputHandler.TickInput(delta);
+            HandleMovement(delta);
+            HandleRollingAndSprinting(delta);
+        }
+
+
         #region Movement
         Vector3 normalVector;
         Vector3 targetPosition;
@@ -60,11 +69,8 @@ namespace MR {
             myTransform.rotation = targetRotation;
         }
 
-        public void Update() {
-            float delta = Time.deltaTime;
-
-            inputHandler.TickInput(delta);
-
+        private void HandleMovement(float delta)
+        {
             moveDirection = cameraObject.forward * inputHandler.vertical;
             moveDirection += cameraObject.right * inputHandler.horizontal;
             moveDirection.Normalize();
@@ -84,6 +90,30 @@ namespace MR {
             }
         }
 
+        public void HandleRollingAndSprinting(float delta)
+        {
+            if (animatorHandler.anim.GetBool("isInteracting"))
+                return;
+
+            if (inputHandler.rollFlag)
+            {
+                moveDirection = cameraObject.forward * inputHandler.vertical;
+                moveDirection += cameraObject.right * inputHandler.horizontal;
+
+                if(inputHandler.moveAmount > 0)
+                {
+                    animatorHandler.PlayTargetAnimation("Rolling", true);
+                    moveDirection.y = 0;
+                    Quaternion rollRotation = Quaternion.LookRotation(moveDirection);
+                    myTransform.rotation = rollRotation;
+                }
+                else
+                {
+                animatorHandler.PlayTargetAnimation("Backstep", true);
+                }
+            }
+        }
+        
         #endregion
     }
 }
